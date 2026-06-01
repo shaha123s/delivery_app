@@ -20,23 +20,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Delivery App',
+      title: 'Via',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6366F1),
+          seedColor: const Color.fromARGB(255, 118, 216, 142),
           brightness: Brightness.light,
         ),
         appBarTheme: AppBarTheme(
-          backgroundColor: const Color(0xFF6366F1),
+          backgroundColor: const Color.fromARGB(255, 118, 216, 142),
           foregroundColor: Colors.white,
           elevation: 0,
           centerTitle: true,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF6366F1),
+            backgroundColor: const Color.fromARGB(255, 118, 216, 142),
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
             shape: RoundedRectangleBorder(
@@ -58,7 +58,10 @@ class MyApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+            borderSide: const BorderSide(
+              color: Color.fromARGB(255, 118, 216, 142),
+              width: 2,
+            ),
           ),
           contentPadding: const EdgeInsets.symmetric(
             vertical: 14,

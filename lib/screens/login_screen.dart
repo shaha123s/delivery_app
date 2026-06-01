@@ -74,8 +74,8 @@ class _LoginScreenState extends State<LoginScreen> {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              const Color(0xFF6366F1),
-              const Color(0xFF8B5CF6).withOpacity(0.8),
+              const Color.fromARGB(255, 156, 210, 181),
+              const Color.fromARGB(255, 227, 233, 230).withOpacity(0.8),
             ],
           ),
         ),
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'تطبيق التوصيل',
+                    'Via',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             decoration: InputDecoration(
                               hintText: 'أدخل اسمك الكامل',
                               prefixIcon: const Icon(Icons.person_rounded),
-                              prefixIconColor: const Color(0xFF6366F1),
+                              prefixIconColor: const Color(0xff81E8AF),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -179,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 prefixIcon: const Icon(
                                   Icons.assignment_ind_rounded,
                                 ),
-                                prefixIconColor: const Color(0xFF6366F1),
+                                prefixIconColor: const Color(0xff81E8AF),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                   borderSide: BorderSide.none,
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             hintText: 'name@example.com',
                             prefixIcon: const Icon(Icons.email_rounded),
-                            prefixIconColor: const Color(0xFF6366F1),
+                            prefixIconColor: const Color(0xff81E8AF),
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -222,13 +222,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             hintText: '••••••••',
                             prefixIcon: const Icon(Icons.lock_rounded),
-                            prefixIconColor: const Color(0xFF6366F1),
+                            prefixIconColor: const Color(0xff81E8AF),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _passwordVisible
                                     ? Icons.visibility_rounded
                                     : Icons.visibility_off_rounded,
-                                color: const Color(0xFF6366F1),
+                                color: const Color(0xff81E8AF),
                               ),
                               onPressed: () {
                                 setState(
@@ -246,9 +246,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: ElevatedButton(
                             onPressed: loading ? null : submit,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF6366F1),
+                              backgroundColor: const Color(0xff81E8AF),
                               disabledBackgroundColor: const Color(
-                                0xFF6366F1,
+                                0xff81E8AF,
                               ).withOpacity(0.5),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
@@ -286,7 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ? 'ليس لديك حساب؟ انشئ واحد'
                                   : 'لديك حساب؟ ادخل',
                               style: const TextStyle(
-                                color: Color(0xFF6366F1),
+                                color: Color(0xff81E8AF),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

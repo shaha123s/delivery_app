@@ -157,7 +157,10 @@ class _ClientScreenState extends State<ClientScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [const Color(0xFF6366F1).withOpacity(0.05), Colors.white],
+            colors: [
+              const Color.fromARGB(255, 118, 216, 142).withOpacity(0.05),
+              Colors.white,
+            ],
           ),
         ),
         child: Padding(
@@ -168,12 +171,20 @@ class _ClientScreenState extends State<ClientScreen>
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.blue.shade400, Colors.blue.shade600],
+                    colors: [
+                      const Color.fromARGB(255, 118, 216, 142),
+                      const Color.fromARGB(255, 118, 216, 142),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
+                      color: const Color.fromARGB(
+                        255,
+                        118,
+                        216,
+                        142,
+                      ).withOpacity(0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -245,12 +256,20 @@ class _ClientScreenState extends State<ClientScreen>
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.blue.shade300, Colors.blue.shade500],
+                    colors: [
+                      const Color.fromARGB(255, 118, 216, 142),
+                      const Color.fromARGB(255, 118, 216, 142),
+                    ],
                   ),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.4),
+                      color: const Color.fromARGB(
+                        255,
+                        118,
+                        216,
+                        142,
+                      ).withOpacity(0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
@@ -286,7 +305,7 @@ class _ClientScreenState extends State<ClientScreen>
                 icon: const Icon(Icons.send_rounded),
                 label: const Text('🚀 اطلب الآن'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
+                  backgroundColor: const Color.fromARGB(255, 99, 102, 241),
                   disabledBackgroundColor: Colors.grey.shade300,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -364,12 +383,20 @@ class _ClientScreenState extends State<ClientScreen>
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.green.shade400, Colors.green.shade600],
+                  colors: [
+                    const Color.fromARGB(255, 118, 216, 142),
+                    const Color.fromARGB(255, 118, 216, 142),
+                  ],
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.green.withOpacity(0.4),
+                    color: const Color.fromARGB(
+                      255,
+                      118,
+                      216,
+                      142,
+                    ).withOpacity(0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -493,7 +520,12 @@ class _ClientScreenState extends State<ClientScreen>
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.green.withOpacity(0.4),
+                    color: const Color.fromARGB(
+                      255,
+                      118,
+                      216,
+                      142,
+                    ).withOpacity(0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -543,7 +575,7 @@ class _ClientScreenState extends State<ClientScreen>
         width: 8,
         height: 8,
         decoration: BoxDecoration(
-          color: const Color(0xFF6366F1),
+          color: const Color.fromARGB(255, 118, 216, 142),
           shape: BoxShape.circle,
         ),
       ),

@@ -143,7 +143,7 @@ class _DriverScreenState extends State<DriverScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [const Color(0xFF6366F1).withAlpha(13), Colors.white],
+            colors: [const Color(0xff81E8AF).withAlpha(13), Colors.white],
           ),
         ),
         child: Padding(
@@ -211,7 +211,7 @@ class _DriverScreenState extends State<DriverScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1),
+                color: const Color(0xff81E8AF),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -304,7 +304,7 @@ class _DriverScreenState extends State<DriverScreen>
                                     ),
                                     child: Icon(
                                       Icons.local_shipping_rounded,
-                                      color: Colors.blue.shade600,
+                                      color: const Color(0xff81E8AF),
                                       size: 20,
                                     ),
                                   ),
@@ -464,7 +464,7 @@ class _DriverScreenState extends State<DriverScreen>
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blue.shade400, Colors.blue.shade600],
+              colors: [const Color(0xFF42A5F5), Colors.blue.shade600],
             ),
             shape: BoxShape.circle,
             boxShadow: [
