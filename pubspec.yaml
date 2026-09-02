@@ -7,12 +7,14 @@ environment:
   sdk: ^3.8.1
 
 dependencies:
+  google_fonts: ^6.2.1
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.8.4
   geolocator: ^13.0.2
   url_launcher: ^6.3.1
+  lottie: ^3.1.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1
@@ -29,3 +31,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/Group 2.png
+    - assets/delivery.json
+    - assets/1.json
+    - assets/2.json
+    - assets/3.json
+    - assets/wait.json
+

@@ -16,7 +16,7 @@ class _DriverScreenState extends State<DriverScreen>
   final client = Supabase.instance.client;
   List<Map<String, dynamic>> pendingOrders = [];
   String? activeOrderId;
-  String orderStatus = 'waiting'; // waiting, active, completed
+  String orderStatus = 'waiting';
   RealtimeChannel? _channel;
   StreamSubscription<Position>? _positionStream;
   late AnimationController _pulseController;
@@ -45,8 +45,16 @@ class _DriverScreenState extends State<DriverScreen>
         },
       )
       ..subscribe();
-
     _fetchPendingOrders();
+  }
+
+  String _timeAgo(String? dateStr) {
+    if (dateStr == null) return '';
+    final date = DateTime.parse(dateStr);
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 1) return 'الآن';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} دقيقة';
+    return '${diff.inHours} ساعة';
   }
 
   Future<void> _fetchPendingOrders() async {
@@ -56,7 +64,6 @@ class _DriverScreenState extends State<DriverScreen>
 
   Future<void> acceptOrder(Map<String, dynamic> order) async {
     final myId = client.auth.currentUser!.id;
-
     await client
         .from('orders')
         .update({'status': 'accepted', 'driver_id': myId})
@@ -73,16 +80,14 @@ class _DriverScreenState extends State<DriverScreen>
 
   void _startSendingLocation(double destLat, double destLng) async {
     await Geolocator.requestPermission();
-
     _positionStream =
         Geolocator.getPositionStream(
           locationSettings: const LocationSettings(
             accuracy: LocationAccuracy.high,
-            distanceFilter: 5,
+            distanceFilter: 0,
           ),
         ).listen((pos) async {
           final myId = client.auth.currentUser!.id;
-
           await client.from('driver_locations').upsert({
             'driver_id': myId,
             'lat': pos.latitude,
@@ -143,7 +148,7 @@ class _DriverScreenState extends State<DriverScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [const Color(0xff81E8AF).withAlpha(13), Colors.white],
+            colors: [const Color(0xff81E8AF).withOpacity(0.05), Colors.white],
           ),
         ),
         child: Padding(
@@ -158,300 +163,253 @@ class _DriverScreenState extends State<DriverScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Status indicator
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.green.shade400, Colors.green.shade600],
-            ),
+            color: Colors.green.shade50,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.green.withAlpha((0.3 * 255).round()),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
-          child: Row(
+          child: const Row(
             children: [
-              ScaleTransition(
-                scale: Tween(begin: 1.0, end: 1.2).animate(_pulseController),
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
+              Icon(Icons.circle, color: Colors.green, size: 12),
+              SizedBox(width: 8),
               Text(
                 'أنت متصل — في وضع الاستعداد',
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 28),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'الطلبات المتاحة',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xff81E8AF),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '${pendingOrders.length}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
+        const SizedBox(height: 20),
+        Text(
+          'الطلبات المتاحة (${pendingOrders.length})',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 16),
-        if (pendingOrders.isEmpty)
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.inbox_rounded,
-                      size: 60,
-                      color: Colors.grey.shade400,
-                    ),
+        const SizedBox(height: 12),
+        pendingOrders.isEmpty
+            ? const Expanded(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.hourglass_empty, size: 60, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text(
+                        'لا توجد طلبات حالياً',
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'لا توجد طلبات حالياً',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'سيتم إشعارك عند وصول طلب جديد',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
-        else
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _fetchPendingOrders,
-              child: ListView.builder(
-                itemCount: pendingOrders.length,
-                itemBuilder: (context, i) {
-                  final order = pendingOrders[i];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Card(
-                      elevation: 0,
+                ),
+              )
+            : Expanded(
+                child: ListView.builder(
+                  itemCount: pendingOrders.length,
+                  itemBuilder: (context, i) {
+                    final order = pendingOrders[i];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          gradient: LinearGradient(
-                            colors: [Colors.white, Colors.blue.shade50],
-                          ),
-                          border: Border.all(
-                            color: Colors.blue.shade100,
-                            width: 1,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Header
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue.shade100,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Icon(
-                                      Icons.local_shipping_rounded,
-                                      color: const Color(0xff81E8AF),
-                                      size: 20,
-                                    ),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // هيدر البطاقة
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.green.shade50,
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'طلب جديد',
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.labelSmall,
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          'رقم #${order['id'].toString().substring(0, 8)}',
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodySmall,
-                                        ),
-                                      ],
-                                    ),
+                                  child: const Icon(
+                                    Icons.shopping_bag_rounded,
+                                    color: Colors.green,
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.amber.shade100,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      'قيد الانتظار',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .labelSmall
-                                          ?.copyWith(
-                                            color: Colors.amber.shade700,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Locations
-                              Row(
-                                children: [
-                                  Column(
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Container(
-                                        width: 12,
-                                        height: 12,
-                                        decoration: BoxDecoration(
-                                          color: Colors.green.shade500,
-                                          shape: BoxShape.circle,
+                                      const Text(
+                                        'طلب جديد',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
                                         ),
                                       ),
-                                      Container(
-                                        width: 2,
-                                        height: 24,
-                                        color: Colors.grey.shade300,
-                                      ),
-                                      Container(
-                                        width: 12,
-                                        height: 12,
-                                        decoration: BoxDecoration(
-                                          color: Colors.red.shade500,
-                                          shape: BoxShape.circle,
+                                      Text(
+                                        'منذ ${_timeAgo(order['created_at'])}',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade500,
+                                          fontSize: 12,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'نقطة الاستلام',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelSmall
-                                              ?.copyWith(
-                                                color: Colors.grey.shade600,
-                                              ),
-                                        ),
-                                        Text(
-                                          '${order['pickup_lat']?.toStringAsFixed(4)}, ${order['pickup_lng']?.toStringAsFixed(4)}',
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodySmall,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          'نقطة التوصيل',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelSmall
-                                              ?.copyWith(
-                                                color: Colors.grey.shade600,
-                                              ),
-                                        ),
-                                        Text(
-                                          '${order['dest_lat']?.toStringAsFixed(4)}, ${order['dest_lng']?.toStringAsFixed(4)}',
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.bodySmall,
-                                        ),
-                                      ],
-                                    ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // Accept button
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () => acceptOrder(order),
-                                  icon: const Icon(Icons.check_circle_rounded),
-                                  label: const Text('قبول الطلب'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green.shade500,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 12,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade50,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    'قيد الانتظار',
+                                    style: TextStyle(
+                                      color: Colors.orange.shade700,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 ),
+                              ],
+                            ),
+                            const Divider(height: 24),
+                            // مكان الاستلام
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.store_rounded,
+                                  color: Colors.blue,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'مكان الاستلام',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      Text(
+                                        order['pickup_address'] ??
+                                            '${order['pickup_lat']?.toStringAsFixed(4)}, ${order['pickup_lng']?.toStringAsFixed(4)}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            // وصف الطلب
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.list_alt_rounded,
+                                  color: Colors.purple,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'وصف الطلب',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      Text(
+                                        order['description'] ?? 'لا يوجد وصف',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            // عنوان التوصيل
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on_rounded,
+                                  color: Colors.red,
+                                  size: 18,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'عنوان التوصيل',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                      Text(
+                                        order['dest_address'] ??
+                                            '${order['dest_lat']?.toStringAsFixed(4)}, ${order['dest_lng']?.toStringAsFixed(4)}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            // زر القبول
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () => acceptOrder(order),
+                                icon: const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Colors.white,
+                                ),
+                                label: const Text(
+                                  'قبول الطلب',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ),
       ],
     );
   }
@@ -469,7 +427,7 @@ class _DriverScreenState extends State<DriverScreen>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.blue.withAlpha((0.4 * 255).round()),
+                color: Colors.blue.withOpacity(0.4),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -496,7 +454,6 @@ class _DriverScreenState extends State<DriverScreen>
           ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
         ),
         const SizedBox(height: 40),
-        // Action buttons
         SizedBox(
           width: double.infinity,
           height: 56,

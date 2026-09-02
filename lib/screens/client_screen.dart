@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:lottie/lottie.dart';
 
 class ClientScreen extends StatefulWidget {
   const ClientScreen({super.key});
@@ -12,13 +13,16 @@ class ClientScreen extends StatefulWidget {
 class _ClientScreenState extends State<ClientScreen>
     with TickerProviderStateMixin {
   final client = Supabase.instance.client;
-  String orderStatus = 'idle'; // idle, pending, accepted, completed
+  String orderStatus = 'idle';
   String? orderId;
   String driverName = '';
   double? driverLat, driverLng;
   double? myLat, myLng;
   RealtimeChannel? _channel;
   late AnimationController _scaleController;
+  final pickupController = TextEditingController();
+  final descController = TextEditingController();
+  final destController = TextEditingController();
 
   @override
   void initState() {
@@ -48,6 +52,15 @@ class _ClientScreenState extends State<ClientScreen>
 
   Future<void> placeOrder() async {
     if (myLat == null) return;
+    if (pickupController.text.isEmpty ||
+        descController.text.isEmpty ||
+        destController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('رجاءً أكمل جميع الحقول')));
+      return;
+    }
+
     setState(() => orderStatus = 'pending');
 
     final res = await client
@@ -59,6 +72,9 @@ class _ClientScreenState extends State<ClientScreen>
           'pickup_lng': myLng,
           'dest_lat': myLat! + 0.01,
           'dest_lng': myLng! + 0.01,
+          'pickup_address': pickupController.text.trim(),
+          'dest_address': destController.text.trim(),
+          'description': descController.text.trim(),
         })
         .select()
         .single();
@@ -79,6 +95,7 @@ class _ClientScreenState extends State<ClientScreen>
           value: id,
         ),
         callback: (payload) async {
+          print('🔔 تغيير وصل: ${payload.newRecord}');
           final data = payload.newRecord;
           if (data['status'] == 'accepted') {
             final driver = await client
@@ -132,6 +149,9 @@ class _ClientScreenState extends State<ClientScreen>
   void dispose() {
     _channel?.unsubscribe();
     _scaleController.dispose();
+    pickupController.dispose();
+    descController.dispose();
+    destController.dispose();
     super.dispose();
   }
 
@@ -170,10 +190,10 @@ class _ClientScreenState extends State<ClientScreen>
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [
-                      const Color.fromARGB(255, 118, 216, 142),
-                      const Color.fromARGB(255, 118, 216, 142),
+                      Color.fromARGB(255, 118, 216, 142),
+                      Color.fromARGB(255, 118, 216, 142),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(14),
@@ -247,74 +267,82 @@ class _ClientScreenState extends State<ClientScreen>
   Widget _buildContent() {
     switch (orderStatus) {
       case 'idle':
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ScaleTransition(
-              scale: Tween(begin: 1.0, end: 1.1).animate(_scaleController),
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      const Color.fromARGB(255, 118, 216, 142),
-                      const Color.fromARGB(255, 118, 216, 142),
-                    ],
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              // أنيميشن الانتظار
+              Center(
+                child: Lottie.asset(
+                  'assets/wait.json',
+                  width: 150,
+                  height: 150,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  'الرجاء ملء البيانات للمتابعة',
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // من وين؟
+              TextField(
+                controller: pickupController,
+                decoration: InputDecoration(
+                  labelText: 'مكان الاستلام',
+                  prefixIcon: const Icon(Icons.store, color: Colors.green),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(
-                        255,
-                        118,
-                        216,
-                        142,
-                      ).withOpacity(0.4),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // شو بدك؟
+              TextField(
+                controller: descController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'وصف الطلب',
+                  prefixIcon: const Icon(Icons.list_alt, color: Colors.green),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // لوين؟
+              TextField(
+                controller: destController,
+                decoration: InputDecoration(
+                  labelText: 'موقعك',
+                  prefixIcon: const Icon(Icons.location_on, color: Colors.red),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: myLat == null ? null : placeOrder,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.local_shipping_rounded,
-                  size: 60,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'اطلب التوصيل الآن',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'اضغط الزر أدناه للبدء في رحلتك',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
-            ),
-            const SizedBox(height: 40),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: myLat == null ? null : placeOrder,
-                icon: const Icon(Icons.send_rounded),
-                label: const Text('🚀 اطلب الآن'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 99, 102, 241),
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
                   ),
-                  elevation: 4,
+                  child: const Text(
+                    'اطلب الآن',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
 
       case 'pending':
@@ -359,33 +387,22 @@ class _ClientScreenState extends State<ClientScreen>
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
             ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildDot(0),
-                const SizedBox(width: 8),
-                _buildDot(1),
-                const SizedBox(width: 8),
-                _buildDot(2),
-              ],
-            ),
           ],
         );
 
       case 'accepted':
         final distance = _calcDistance();
-        final minutes = (distance / 0.5).round();
+        final minutes = distance < 0.1 ? 1 : (distance / 0.5).ceil();
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [
-                    const Color.fromARGB(255, 118, 216, 142),
-                    const Color.fromARGB(255, 118, 216, 142),
+                    Color.fromARGB(255, 118, 216, 142),
+                    Color.fromARGB(255, 118, 216, 142),
                   ],
                 ),
                 shape: BoxShape.circle,
@@ -428,7 +445,7 @@ class _ClientScreenState extends State<ClientScreen>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200, width: 1),
+                border: Border.all(color: Colors.grey.shade200),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -456,16 +473,20 @@ class _ClientScreenState extends State<ClientScreen>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '${distance.toStringAsFixed(1)} كم',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        distance > 100
+                            ? 'جاري التحديد...'
+                            : '${distance.toStringAsFixed(1)} كم',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'المسافة',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        style: TextStyle(
                           color: Colors.grey.shade600,
+                          fontSize: 12,
                         ),
                       ),
                     ],
@@ -487,16 +508,18 @@ class _ClientScreenState extends State<ClientScreen>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '$minutes دقيقة',
-                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        minutes > 200 ? 'جاري التحديد...' : '$minutes دقيقة',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'الوقت المتوقع',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        style: TextStyle(
                           color: Colors.grey.shade600,
+                          fontSize: 12,
                         ),
                       ),
                     ],
@@ -574,8 +597,8 @@ class _ClientScreenState extends State<ClientScreen>
       child: Container(
         width: 8,
         height: 8,
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 118, 216, 142),
+        decoration: const BoxDecoration(
+          color: Color.fromARGB(255, 118, 216, 142),
           shape: BoxShape.circle,
         ),
       ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/supabase_service.dart';
 import 'client_screen.dart';
 import 'driver_screen.dart';
+import 'package:lottie/lottie.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -90,19 +91,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   // Header
                   Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withOpacity(0.2)),
-                    ),
-                    child: const Icon(
-                      Icons.local_shipping_rounded,
-                      size: 48,
-                      color: Colors.white,
+                    child: Lottie.asset(
+                      'assets/1.json',
+                      width: 140,
+                      height: 140,
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
                   Text(
                     'Via',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -112,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    isLogin ? 'مرحباً بعودتك' : 'انضم إلينا الآن',
+                    isLogin ? 'welcome back' : 'join us now',
                     style: Theme.of(
                       context,
                     ).textTheme.bodyLarge?.copyWith(color: Colors.white70),
